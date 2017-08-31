@@ -4,11 +4,15 @@ This plugins allows to connect to an MQTT Message broker to receive sensor data 
 
 ## Installation
 
+
+### Install missing python lib
 After installation please install python MQTT lib paho
 
 ```pip install paho-mqtt```
 
 https://pypi.python.org/pypi/paho-mqtt/1.1
+
+### Install MQTT message broker
 
 Second step is to install an MQTT message broker on your Raspberry Pi.
 An open source message broker is mosquitto (https://mosquitto.org/)
