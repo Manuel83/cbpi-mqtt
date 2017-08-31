@@ -13,6 +13,14 @@ def on_connect(client, userdata, flags, rc):
     print("MQTT Connected" + str(rc))
 
 class MQTTThread (threading.Thread):
+
+    def __init__(self,server,port,username,password):
+        threading.Thread.__init__(self)
+        self.server = server
+        self.port = port
+        self.username = username
+        self.password = password
+
     client = None
     def run(self):
         self.client = mqtt.Client()
@@ -63,7 +71,28 @@ class MQTT_SENSOR(SensorActive):
 
 @cbpi.initalizer(order=0)
 def initMQTT(app):
-    app.cache["mqtt"] = MQTTThread()
+
+    server = app.get_config_parameter("MQTT_SERVER",None)
+    if server is None:
+        server = "localhost"
+        cbpi.add_config_parameter("MQTT_SERVER", "localhost", "text", "MQTT Server")
+
+    port = app.get_config_parameter("MQTT_PORT", None)
+    if port is None:
+        port = "1883"
+        cbpi.add_config_parameter("MQTT_PORT", "1883", "text", "MQTT Sever Port")
+
+    username = app.get_config_parameter("MQTT_USERNAME", None)
+    if username is None:
+        username = "username"
+        cbpi.add_config_parameter("MQTT_USERNAME", "username", "text", "MQTT username")
+
+    password = app.get_config_parameter("MQTT_PASSWORD", None)
+    if password is None:
+        password = "password"
+        cbpi.add_config_parameter("MQTT_PASSWORD", "password", "text", "MQTT password")
+
+    app.cache["mqtt"] = MQTTThread(server,port,username, password)
     app.cache["mqtt"].start()
     def mqtt_reader(api):
         while True:
