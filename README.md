@@ -27,5 +27,7 @@ sudo service mosquitto stop
 sudo service mosquitto start
 ```
 
+The current version don't support username and password log for the mqtt broker
+
 # MQTT Test Client 
 A nice MQTT test client is mqtt.fx http://www.mqttfx.org/
