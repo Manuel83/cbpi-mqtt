@@ -1,6 +1,6 @@
 # MQTT Plugin for CraftBeerPi 3.0
 
-This plugins allows to connect to an MQTT Message broker to receive sensor data and invoke actors.
+This plugins allows to connect to an MQTT Message broker to receive sensor data and invoke actors. 
 
 ## Installation
 
@@ -21,8 +21,11 @@ An open source message broker is mosquitto (https://mosquitto.org/)
 sudo apt-get update
 sudo apt-get install mosquitto
 
+# Furhter commands to control mosquitto service
 sudo service mosquitto status
-Starten und Stopen geht so
 sudo service mosquitto stop
 sudo service mosquitto start
 ```
+
+# MQTT Test Client 
+A nice MQTT test client is mqtt.fx http://www.mqttfx.org/
