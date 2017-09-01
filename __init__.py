@@ -25,7 +25,7 @@ class MQTTThread (threading.Thread):
     def run(self):
         self.client = mqtt.Client()
         self.client.on_connect = on_connect
-        self.client.connect("localhost", 1883, 60)
+        self.client.connect(str(self.server), int(self.port), 60)
         self.client.loop_forever()
 
 @cbpi.actor
