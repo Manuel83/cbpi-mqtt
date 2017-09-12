@@ -40,14 +40,32 @@ class MQTTActor(ActorBase):
 
 @cbpi.sensor
 class MQTT_SENSOR(SensorActive):
-    topic = Property.Text("Topic", configurable=True, default_value="", description="MQTT TOPIC")
+    a_topic = Property.Text("Topic", configurable=True, default_value="", description="MQTT TOPIC")
+    b_payload = Property.Text("Payload Dict", configurable=True, default_value="", description="Where to find msg in patload, leave blank for raw payload: EG msg = {"A":{"B": 32 }} A.B will return 32)
+    c_unit = Property.Text("Unit", configurable=True, default_value="°C", description="Units to display")
+
     last_value = None
     def init(self):
+        self.topic = self.a_topic
+        if self.b_payload == "":
+            self.payload_text = None
+        else:
+            self.payload_text = self.b_payload.split('.')
+        self.unit = self.c_unit
+
         SensorActive.init(self)
         def on_message(client, userdata, msg):
+            
             try:
+                print "payload " + msg.payload        
                 json_data = json.loads(msg.payload)
-                q.put({"id": on_message.sensorid, "value": json_data.get("temperature")})
+                print json_data
+                val = json_data
+                if self.payload_text is not None:
+                    for key in self.payload_text:
+                        val = val.get(key, 0)
+                print val
+                q.put({"id": on_message.sensorid, "value": val})
             except:
                 pass
         on_message.sensorid = self.id
@@ -56,7 +74,10 @@ class MQTT_SENSOR(SensorActive):
 
 
     def get_value(self):
-        return {"value": self.last_value, "unit": ""}
+        return {"value": self.last_value, "unit": self.unit}
+
+    deg get_units(self):
+        return self.unit
 
     def stop(self):
         self.api.cache["mqtt"].client.unsubscribe(self.topic)
@@ -67,7 +88,7 @@ class MQTT_SENSOR(SensorActive):
         Active sensor has to handle his own loop
         :return: 
         '''
-        pass
+        self.sleep(5)
 
 @cbpi.initalizer(order=0)
 def initMQTT(app):
@@ -93,6 +114,7 @@ def initMQTT(app):
         cbpi.add_config_parameter("MQTT_PASSWORD", "password", "text", "MQTT password")
 
     app.cache["mqtt"] = MQTTThread(server,port,username, password)
+    app.cache["mqtt"].daemon = True
     app.cache["mqtt"].start()
     def mqtt_reader(api):
         while True:
