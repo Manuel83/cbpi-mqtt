@@ -1,6 +1,8 @@
 # MQTT Plugin for CraftBeerPi 3.0
 
-This plugins allows to connect to an MQTT Message broker to receive sensor data and invoke actors. 
+This plugins allows to connect to an MQTT Message broker to receive sensor data and invoke actors.
+
+
 
 ## Installation
 
@@ -31,3 +33,15 @@ The current version don't support username and password log for the mqtt broker
 
 # MQTT Test Client 
 A nice MQTT test client is mqtt.fx http://www.mqttfx.org/
+
+
+# Plugin config
+
+## MQTT Sensor
+
+- Enter the message topic
+- If the data in the payload is in a dictionary, specify the path in "Payload dictionary" with '.' seperators. EG
+  - msg = { "Name":"MySensor", "Sensor": {"Value": 32 , "Type" : "1-wire"}
+  - "Payload Dict" = Sensor.Value
+- If you data is raw eg (mosquitto_pub -d -t temperture -m 32), leave "Payload Dictionary" Blank
+- Enter prefered unit up to 3 chars
