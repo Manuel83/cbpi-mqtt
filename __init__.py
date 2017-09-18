@@ -41,8 +41,8 @@ class MQTTActor(ActorBase):
 @cbpi.sensor
 class MQTT_SENSOR(SensorActive):
     a_topic = Property.Text("Topic", configurable=True, default_value="", description="MQTT TOPIC")
-    b_payload = Property.Text("Payload Dict", configurable=True, default_value="", description="Where to find msg in patload, leave blank for raw payload: EG msg = {"A":{"B": 32 }} A.B will return 32)
-    c_unit = Property.Text("Unit", configurable=True, default_value="°C", description="Units to display")
+    b_payload = Property.Text("Payload Dictioanry", configurable=True, default_value="", description="Where to find msg in patload, leave blank for raw payload")
+    c_unit = Property.Text("Unit", configurable=True, default_value="", description="Units to display")
 
     last_value = None
     def init(self):
@@ -51,7 +51,7 @@ class MQTT_SENSOR(SensorActive):
             self.payload_text = None
         else:
             self.payload_text = self.b_payload.split('.')
-        self.unit = self.c_unit
+        self.unit = self.c_unit[0:3]
 
         SensorActive.init(self)
         def on_message(client, userdata, msg):
@@ -59,15 +59,16 @@ class MQTT_SENSOR(SensorActive):
             try:
                 print "payload " + msg.payload        
                 json_data = json.loads(msg.payload)
-                print json_data
+                #print json_data
                 val = json_data
                 if self.payload_text is not None:
                     for key in self.payload_text:
-                        val = val.get(key, 0)
-                print val
-                q.put({"id": on_message.sensorid, "value": val})
-            except:
-                pass
+                        val = val.get(key, None)
+                #print val
+                if isinstance(val, (int, float, basestring)):
+                    q.put({"id": on_message.sensorid, "value": val})
+            except Exception as e:
+                print e
         on_message.sensorid = self.id
         self.api.cache["mqtt"].client.subscribe(self.topic)
         self.api.cache["mqtt"].client.message_callback_add(self.topic, on_message)
@@ -76,7 +77,7 @@ class MQTT_SENSOR(SensorActive):
     def get_value(self):
         return {"value": self.last_value, "unit": self.unit}
 
-    deg get_units(self):
+    def get_unit(self):
         return self.unit
 
     def stop(self):
