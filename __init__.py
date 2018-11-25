@@ -14,17 +14,25 @@ def on_connect(client, userdata, flags, rc):
 
 class MQTTThread (threading.Thread):
 
-    def __init__(self,server,port,username,password):
+    def __init__(self,server,port,username,password,tls):
         threading.Thread.__init__(self)
         self.server = server
         self.port = port
         self.username = username
         self.password = password
+        self.tls = tls
 
     client = None
     def run(self):
         self.client = mqtt.Client()
         self.client.on_connect = on_connect
+
+        if self.username != "username" and self.password != "password":
+            self.client.username_pw_set(self.username, self.password)
+        
+        if self.tls.lower() == 'true':
+            self.client.tls_set_context(context=None)
+
         self.client.connect(str(self.server), int(self.port), 60)
         self.client.loop_forever()
 
@@ -36,7 +44,6 @@ class MQTTActor(ActorBase):
 
     def off(self):
         self.api.cache["mqtt"].client.publish(self.topic, payload=json.dumps({"state": "off"}), qos=2, retain=True)
-
 
 @cbpi.sensor
 class MQTT_SENSOR(SensorActive):
@@ -114,9 +121,15 @@ def initMQTT(app):
         password = "password"
         cbpi.add_config_parameter("MQTT_PASSWORD", "password", "text", "MQTT password")
 
-    app.cache["mqtt"] = MQTTThread(server,port,username, password)
+    tls = app.get_config_parameter("MQTT_TLS", None)
+    if tls is None:
+        tls = "false"
+        cbpi.add_config_parameter("MQTT_TLS", "false", "text", "MQTT TLS")
+
+    app.cache["mqtt"] = MQTTThread(server,port,username, password, tls)
     app.cache["mqtt"].daemon = True
     app.cache["mqtt"].start()
+    
     def mqtt_reader(api):
         while True:
             try:
