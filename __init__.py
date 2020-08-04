@@ -10,7 +10,7 @@ from modules.core.props import Property
 q = Queue()
 
 def on_connect(client, userdata, flags, rc):
-    print(("MQTT Connected" + str(rc)))
+    print("MQTT Connected" + str(rc))
 
 class MQTTThread (threading.Thread):
 
@@ -29,7 +29,7 @@ class MQTTThread (threading.Thread):
 
         if self.username != "username" and self.password != "password":
             self.client.username_pw_set(self.username, self.password)
-
+        
         if self.tls.lower() == 'true':
             self.client.tls_set_context(context=None)
 
@@ -71,9 +71,9 @@ class MQTT_SENSOR(SensorActive):
 
         SensorActive.init(self)
         def on_message(client, userdata, msg):
-
+            
             try:
-                print(("payload " + msg.payload))
+                print "payload " + msg.payload        
                 json_data = json.loads(msg.payload)
                 #print json_data
                 val = json_data
@@ -81,10 +81,10 @@ class MQTT_SENSOR(SensorActive):
                     for key in self.payload_text:
                         val = val.get(key, None)
                 #print val
-                if isinstance(val, (int, float, str)):
+                if isinstance(val, (int, float, basestring)):
                     q.put({"id": on_message.sensorid, "value": val})
             except Exception as e:
-                print(e)
+                print e
         on_message.sensorid = self.id
         self.api.cache["mqtt"].client.subscribe(self.topic)
         self.api.cache["mqtt"].client.message_callback_add(self.topic, on_message)
@@ -103,7 +103,7 @@ class MQTT_SENSOR(SensorActive):
     def execute(self):
         '''
         Active sensor has to handle his own loop
-        :return:
+        :return: 
         '''
         self.sleep(5)
 
@@ -138,7 +138,7 @@ def initMQTT(app):
     app.cache["mqtt"] = MQTTThread(server,port,username, password, tls)
     app.cache["mqtt"].daemon = True
     app.cache["mqtt"].start()
-
+    
     def mqtt_reader(api):
         while True:
             try:
@@ -149,3 +149,5 @@ def initMQTT(app):
                 pass
 
     cbpi.socketio.start_background_task(target=mqtt_reader, api=app)
+
+
