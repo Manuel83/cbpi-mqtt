@@ -113,6 +113,36 @@ class ESPEasyMQTT(ActorBase):
                                               retain=True)
 
 
+@cbpi.actor
+class ESPHomeMQTT(ActorBase):
+    """
+    ESPHome MQTT Actor
+    """
+    topic = Property.Text("Topic",
+                          configurable=True,
+                          default_value="",
+                          description="MQTT TOPIC")
+
+    def on(self,  # pylint: disable=invalid-name
+           power=100):  # pylint: disable=unused-argument
+        """
+        turn actor on
+        """
+        self.api.cache["mqtt"].client.publish(self.topic,
+                                              payload='ON',
+                                              qos=2,
+                                              retain=True)
+
+    def off(self):
+        """
+        turn actor off
+        """
+        self.api.cache["mqtt"].client.publish(self.topic,
+                                              payload='OFF',
+                                              qos=2,
+                                              retain=True)
+
+
 @cbpi.sensor
 class MQTTSensor(SensorActive):
     """
